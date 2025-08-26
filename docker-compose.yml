@@ -1,0 +1,67 @@
+services:
+  backend:
+    container_name: jobstack-seeker-backend-c
+    image: jobstack-seeker-backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '${BACKEND_PORT}:${BACKEND_PORT}'
+    environment:
+      APP_NAME: ${APP_NAME}
+      SERVER_ENDPOINT: ${SERVER_ENDPOINT}
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      REDIS_URL: ${REDIS_URL}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      NODE_ENV: ${NODE_ENV}
+      SMTP_AWS_SES: ${SMTP_AWS_SES}
+      AWS_REGION: ${AWS_REGION}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      SMTP_GMAIL: ${SMTP_GMAIL}
+      GMAIL_USER: ${GMAIL_USER}
+      GMAIL_PASS: ${GMAIL_PASS}
+      MAIL_LOG: 'true'
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+      STORAGE_BASE_URL: ${STORAGE_BASE_URL}
+      MSG91_AUTH_KEY: ${MSG91_AUTH_KEY}
+      MSG91_TEMPLATE_ID: ${MSG91_TEMPLATE_ID}
+    volumes:
+      - ./credentials/gcp:/app/credentials/gcp:ro
+    depends_on:
+      - db
+      - redis
+    networks:
+      - jobstack-seeker-network-c
+  db:
+    image: postgres:16-alpine
+    container_name: jobstack-seeker-db
+    ports:
+      - '${DATABASE_PORT}:5432'
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - jobstack-seeker-db:/var/lib/postgresql/data
+    networks:
+      - jobstack-seeker-network-c
+  redis:
+    image: redis:7.2-alpine
+    container_name: jobstack-seeker-redis
+    ports:
+      - '${REDIS_PORT}:6379'
+    volumes:
+      - jobstack-seeker-redis:/data
+    networks:
+      - jobstack-seeker-network-c
+networks:
+  jobstack-seeker-network-c:
+    name: jobstack-seeker-network-c
+    internal: false
+volumes:
+  jobstack-seeker-db:
+    name: jobstack-seeker-db
+  jobstack-seeker-redis:
+    name: jobstack-seeker-redis
