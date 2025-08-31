@@ -1,5 +1,6 @@
 v10/
 drizzle/
+credentials/
 node_modules
 dist
 .env.local

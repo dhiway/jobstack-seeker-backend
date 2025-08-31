@@ -7,7 +7,7 @@ import {
 } from 'fastify-type-provider-zod';
 import formDataPlugin from '@fastify/formbody';
 import { drizzle } from 'drizzle-orm/node-postgres';
-/* import v1Routes from '@routes/v1'; */
+import v1Routes from '@routes/v1';
 /* import fastifySwagger from '@fastify/swagger'; */
 import 'dotenv';
 /* import fastifyRateLimit from '@fastify/rate-limit'; */
@@ -94,7 +94,7 @@ async function main() {
 
   // Application Routes Setup
   /* await app.register(HomepageRoute); */
-  /* await app.register(v1Routes, { prefix: '/api/v1' }); */
+  await app.register(v1Routes, { prefix: '/api/v1' });
   await app.register(AuthRoutes);
 
   const env_port = parseInt(process.env.BACKEND_PORT || '');
