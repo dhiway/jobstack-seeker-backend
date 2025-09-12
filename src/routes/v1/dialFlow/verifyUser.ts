@@ -1,5 +1,6 @@
 import { member, user } from '@db/schema/auth';
 import { db } from '@db/setup';
+import { sendWhatsAppMessage } from '@lib/whatsapp-messager';
 import { eq } from 'drizzle-orm';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod/v4';
@@ -47,6 +48,17 @@ const verifyUser = async (
         createdAt: new Date(),
         organizationId: orgId,
       });
+    }
+  }
+
+  if (process.env.SEND_WHATSAPP_NOTIFICATION === 'true') {
+    try {
+      await sendWhatsAppMessage(
+        phoneNumber,
+        process.env.TWILIO_CONTENT_SID_DIALFLOW_SEEKER!
+      );
+    } catch (err) {
+      console.error('Whatsapp message failed', err);
     }
   }
 
