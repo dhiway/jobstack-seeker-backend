@@ -13,6 +13,8 @@ import 'dotenv';
 /* import fastifyRateLimit from '@fastify/rate-limit'; */
 /* import redis from '@lib/redis'; */
 import AuthRoutes from '@routes/auth';
+import fastifyRateLimit from '@fastify/rate-limit';
+import redis from '@lib/redis';
 /* import HomepageRoute from '@routes/home'; */
 
 declare module 'fastify' {
@@ -83,14 +85,14 @@ async function main() {
   await app.register(formDataPlugin);
 
   // Rate Limit setup: ban can be added
-  /* app.register(fastifyRateLimit, { */
-  /*   global: true, */
-  /*   redis, */
-  /*   keyGenerator: (req) => req.user?.id ?? req.ip, */
-  /*   max: 100, */
-  /*   timeWindow: '1 minute', */
-  /*   skipOnError: true, */
-  /* }); */
+  app.register(fastifyRateLimit, {
+    global: true,
+    redis,
+    max: 100,
+    ban: 3,
+    timeWindow: '1 minute',
+    skipOnError: true,
+  });
 
   // Application Routes Setup
   /* await app.register(HomepageRoute); */
@@ -99,6 +101,20 @@ async function main() {
 
   const env_port = parseInt(process.env.BACKEND_PORT || '');
   const port = isNaN(env_port) || !env_port ? 3002 : env_port;
+
+  // Loggers
+  app.addHook('onResponse', (request, _, done) => {
+    const memoryUsage = process.memoryUsage();
+    if (memoryUsage.heapUsed > 1024 * 1024 * 1024) {
+      // 1gb threshold
+      console.warn(
+        `High memory usage: ${request.url}-${new Date()}`,
+        memoryUsage.heapUsed / 1024 / 1024,
+        'MB'
+      );
+    }
+    done();
+  });
 
   await app.listen({
     port: port,

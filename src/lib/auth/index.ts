@@ -30,7 +30,7 @@ if (!senderName) {
   throw Error('Env Variable EMAIL_SENDER (name) not set');
 }
 
-const allowed_origins = [''];
+const allowed_origins = [];
 
 if (process.env.NODE_ENV !== 'production') {
   allowed_origins.push('http://localhost:3000');
@@ -67,8 +67,14 @@ export const auth = betterAuth({
       },
     },
   },
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 10 * 60,
+    },
+  },
   rateLimit: {
-    storage: 'secondary-storage',
+    enabled: false,
   },
   secondaryStorage: {
     get: async (key) => {
@@ -77,7 +83,7 @@ export const auth = betterAuth({
     },
     set: async (key, value, ttl) => {
       if (ttl) await redis.set(key, value, 'EX', ttl);
-      else await redis.set(key, value, 'EX', 7200);
+      else await redis.set(key, value, 'EX', 600);
     },
     delete: async (key) => {
       await redis.del(key);
