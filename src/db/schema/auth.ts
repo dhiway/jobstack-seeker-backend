@@ -26,6 +26,7 @@ export const user = pgTable('user', {
   banExpires: timestamp('ban_expires'),
   phoneNumber: text('phone_number').unique(),
   phoneNumberVerified: boolean('phone_number_verified'),
+  dateOfBirth: timestamp('date_of_birth'),
 });
 
 export const account = pgTable('account', {

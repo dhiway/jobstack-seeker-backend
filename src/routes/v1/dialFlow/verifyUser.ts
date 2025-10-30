@@ -40,7 +40,7 @@ const verifyUser = async (
     userDetails = createdUser[0];
 
     // ✅ only add to member if orgId is present
-    if (orgId && z.string().uuid().safeParse(orgId).success) {
+    if (orgId && z.uuid().safeParse(orgId).success) {
       await db.insert(member).values({
         id: crypto.randomUUID(),
         role,
@@ -61,7 +61,6 @@ const verifyUser = async (
       console.error('Whatsapp message failed', err);
     }
   }
-
   reply.status(200).send({
     statusCode: 200,
     message: 'User Details Fetched',
@@ -70,5 +69,4 @@ const verifyUser = async (
     },
   });
 };
-
 export default verifyUser;

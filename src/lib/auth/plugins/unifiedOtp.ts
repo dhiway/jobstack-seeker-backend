@@ -3,6 +3,8 @@ import { APIError, createAuthEndpoint } from 'better-auth/api';
 import { type BetterAuthPlugin } from 'better-auth/types';
 import z from 'zod/v4';
 import { setSessionCookie } from './utils';
+import { isMinor } from '@lib/utils';
+import { isDate } from 'util/types';
 
 const CheckUserInput = z.object({
   email: z.email('Please enter a valid Email').optional().meta({
@@ -46,6 +48,7 @@ const VerifyOtpInput = z.object({
   otp: z.string('Enter a valid 6 digit otp').length(6).meta({
     description: 'Six digit otp. Ex: "777666"',
   }),
+  dateOfBirth: z.date().optional().nullable().default(null),
   rememberMe: z
     .boolean('If session should be remembered')
     .default(true)
@@ -82,6 +85,8 @@ const VerifyOtpInput = z.object({
 export interface UserWithPhoneNumber extends User {
   phoneNumber: string;
   phoneNumberVerified: boolean;
+  dateOfBirth?: string; // stored as ISO date or YYYY-MM-DD
+  isMinor?: boolean; // computed at runtime
 }
 
 export interface unifiedOtpOptions {
@@ -119,6 +124,7 @@ export const unifiedOtp = ({
         email: { type: 'string', unique: true },
         phoneNumber: { type: 'string', required: false, unique: true },
         phoneNumberVerified: { type: 'boolean', required: false },
+        dateOfBirth: { type: 'date', required: false },
       },
     },
   },
@@ -496,6 +502,7 @@ export const unifiedOtp = ({
           rememberMe,
           joinOrg,
           createAdmin,
+          dateOfBirth,
         } = validator.data;
 
         if (!email && !phoneNumber) {
@@ -576,6 +583,7 @@ export const unifiedOtp = ({
               banned: false,
               banReason: '',
               banExpires: null,
+              dateOfBirth: dateOfBirth || null,
             },
           });
         }
@@ -695,6 +703,10 @@ export const unifiedOtp = ({
           throw new APIError('SERVICE_UNAVAILABLE');
         }
 
+        const userIsMinor = isDate(user.dateOfBirth)
+          ? isMinor(user.dateOfBirth)
+          : false;
+
         try {
           const session = await ctx.context.internalAdapter.createSession(
             user.id,
@@ -706,15 +718,15 @@ export const unifiedOtp = ({
             ctx,
             {
               session: session as any,
-              user: updatedUser,
+              user: { ...updatedUser, isMinor: userIsMinor },
             },
             rememberMe === false
           );
 
           return {
-            redirect: '',
+            redirect: false,
             token: session.token,
-            user: updatedUser,
+            user: { ...updatedUser, isMinor: userIsMinor },
           };
         } catch (error: any) {
           throw new APIError('SERVICE_UNAVAILABLE', error.message);
