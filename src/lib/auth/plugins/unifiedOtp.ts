@@ -17,6 +17,7 @@ const CheckUserInput = z.object({
     .meta({
       description: 'Phone number to sign in. Eg: "+911234567890"',
     }),
+  dateOfBirth: z.date(),
 });
 const RequestOtpInput = z.object({
   email: z.email('Please enter a valid Email').optional().meta({
@@ -109,7 +110,7 @@ export interface unifiedOtpOptions {
   adminByDomain?: string[];
 }
 
-const generateOtp = () =>
+export const generateOtp = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
 
 export const unifiedOtp = ({
@@ -194,7 +195,7 @@ export const unifiedOtp = ({
           });
         }
 
-        const { email, phoneNumber } = validator.data;
+        const { email, phoneNumber, dateOfBirth } = validator.data;
 
         let user: UserWithPhoneNumber | null = null;
 
@@ -211,9 +212,15 @@ export const unifiedOtp = ({
           });
         }
         if (user) {
-          return ctx.json({ userExists: true });
+          const userIsMinor = isDate(user.dateOfBirth)
+            ? isMinor(user.dateOfBirth)
+            : false;
+          return ctx.json({ userExists: true, isMinor: userIsMinor });
         } else {
-          return ctx.json({ userExists: false });
+          const userIsMinor = isDate(dateOfBirth)
+            ? isMinor(dateOfBirth)
+            : false;
+          return ctx.json({ userExists: false, isMinor: userIsMinor });
         }
       }
     ),

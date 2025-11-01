@@ -54,7 +54,7 @@ export async function sendWhatsAppMessage(
     throw new Error(`Twilio API call failed: ${response.status} - ${errText}`);
   }
 
-  const data: TwilioResponse = await response.json();
+  const data: TwilioResponse = (await response.json()) as any;
 
   if (data.error_code) {
     switch (data.error_code) {

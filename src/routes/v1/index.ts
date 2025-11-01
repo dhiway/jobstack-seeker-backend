@@ -5,6 +5,7 @@ import location from './profile/location';
 import contact from './profile/contact';
 import adminRoutes from './admin';
 import dialFlowRoutes from './dialFlow';
+import consentRoutesProvider from './consent';
 
 const v1Routes: FastifyPluginAsync = async (fastify) => {
   fastify.register(adminRoutes, { prefix: '/admin' });
@@ -13,6 +14,7 @@ const v1Routes: FastifyPluginAsync = async (fastify) => {
   fastify.register(contact, { prefix: '/contact' });
   fastify.register(storageBucket, { prefix: '/storage' });
   fastify.register(dialFlowRoutes, { prefix: '/dial-flow' });
+  fastify.register(consentRoutesProvider, { prefix: '/consent' });
 };
 
 export default v1Routes;
