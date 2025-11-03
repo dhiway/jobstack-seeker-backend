@@ -104,6 +104,12 @@ export interface unifiedOtpOptions {
     user: UserWithPhoneNumber | null;
   }) => Promise<void>;
   /**
+   * Function to run after user creation
+   */
+  afterUserCreate: (data: {
+    user: UserWithPhoneNumber;
+  }) => Promise<Record<string, any>>;
+  /**
    * email domains to be set as admin by default
    * use with caution
    */
@@ -116,6 +122,7 @@ export const generateOtp = () =>
 export const unifiedOtp = ({
   sendPhoneOtp,
   sendEmailOtp,
+  afterUserCreate,
   adminByDomain,
 }: unifiedOtpOptions): BetterAuthPlugin => ({
   id: 'unified-otp',
@@ -714,6 +721,8 @@ export const unifiedOtp = ({
           ? isMinor(user.dateOfBirth)
           : false;
 
+        const afterUser = await afterUserCreate({ user });
+
         try {
           const session = await ctx.context.internalAdapter.createSession(
             user.id,
@@ -734,6 +743,7 @@ export const unifiedOtp = ({
             redirect: false,
             token: session.token,
             user: { ...updatedUser, isMinor: userIsMinor },
+            afterUserCreate: afterUser,
           };
         } catch (error: any) {
           throw new APIError('SERVICE_UNAVAILABLE', error.message);

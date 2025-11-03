@@ -23,6 +23,7 @@ import {
 } from './plugins/AccessControl';
 import { sendSmsWithMsg91 } from '@lib/messager';
 import { emailOtpHtmlTemplate } from '@src/templates/unifiedOtp';
+import { updateUserConsent } from '@lib/consent/updateConsentUserId';
 
 const senderName = process.env.APP_NAME;
 
@@ -187,6 +188,10 @@ export const auth = betterAuth({
           subject: 'Your One-Time Password (OTP) for Jobstack seeker',
           html: emailOtpHtmlTemplate(otp, user),
         });
+      },
+      afterUserCreate: async (payload) => {
+        const reply = await updateUserConsent(payload.user);
+        return { status: reply.updated, consentId: reply.consentId };
       },
       adminByDomain: [],
     }),
