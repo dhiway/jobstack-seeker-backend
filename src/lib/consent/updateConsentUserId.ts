@@ -3,7 +3,9 @@ import { db } from '@db/setup';
 import { UserWithPhoneNumber } from 'better-auth/plugins';
 import { eq, or } from 'drizzle-orm';
 
-export async function updateUserConsent(user: UserWithPhoneNumber): Promise<{
+export async function updateUserGuardianConsent(
+  user: UserWithPhoneNumber
+): Promise<{
   updated: boolean;
   consentId: string | null;
 }> {

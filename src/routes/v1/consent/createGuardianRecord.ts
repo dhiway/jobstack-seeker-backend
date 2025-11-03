@@ -23,7 +23,7 @@ export async function createGuardianRecord(
     const { userEmail, userPhone, guardianName, guardianEmail, guardianPhone } =
       request.body;
 
-    const userId = request.user.id;
+    const userId = request.user?.id;
     const otp = generateOtp();
     const expiresInSec = 5 * 60;
     let consent;

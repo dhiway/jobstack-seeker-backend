@@ -23,7 +23,7 @@ import {
 } from './plugins/AccessControl';
 import { sendSmsWithMsg91 } from '@lib/messager';
 import { emailOtpHtmlTemplate } from '@src/templates/unifiedOtp';
-import { updateUserConsent } from '@lib/consent/updateConsentUserId';
+import { updateUserGuardianConsent } from '@lib/consent/updateConsentUserId';
 
 const senderName = process.env.APP_NAME;
 
@@ -190,7 +190,7 @@ export const auth = betterAuth({
         });
       },
       afterUserCreate: async (payload) => {
-        const reply = await updateUserConsent(payload.user);
+        const reply = await updateUserGuardianConsent(payload.user);
         return { status: reply.updated, consentId: reply.consentId };
       },
       adminByDomain: [],

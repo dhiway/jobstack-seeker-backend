@@ -27,6 +27,8 @@ export const user = pgTable('user', {
   phoneNumber: text('phone_number').unique(),
   phoneNumberVerified: boolean('phone_number_verified'),
   dateOfBirth: timestamp('date_of_birth'),
+  termsAccepted: boolean('terms_accepted').default(false),
+  privacyAccepted: boolean('privacy_accepted').default(false),
 });
 
 export const account = pgTable('account', {

@@ -17,7 +17,7 @@ const CheckUserInput = z.object({
     .meta({
       description: 'Phone number to sign in. Eg: "+911234567890"',
     }),
-  dateOfBirth: z.date(),
+  dateOfBirth: z.string().optional(),
 });
 const RequestOtpInput = z.object({
   email: z.email('Please enter a valid Email').optional().meta({
@@ -88,6 +88,8 @@ export interface UserWithPhoneNumber extends User {
   phoneNumberVerified: boolean;
   dateOfBirth?: string; // stored as ISO date or YYYY-MM-DD
   isMinor?: boolean; // computed at runtime
+  termsAccepted: boolean | null;
+  privacyAccepted: boolean | null;
 }
 
 export interface unifiedOtpOptions {
@@ -133,6 +135,8 @@ export const unifiedOtp = ({
         phoneNumber: { type: 'string', required: false, unique: true },
         phoneNumberVerified: { type: 'boolean', required: false },
         dateOfBirth: { type: 'date', required: false },
+        termsAccepted: { type: 'boolean', required: false },
+        privacyAccepted: { type: 'boolean', required: false },
       },
     },
   },
@@ -224,9 +228,9 @@ export const unifiedOtp = ({
             : false;
           return ctx.json({ userExists: true, isMinor: userIsMinor });
         } else {
-          const userIsMinor = isDate(dateOfBirth)
-            ? isMinor(dateOfBirth)
-            : false;
+          const date =
+            typeof dateOfBirth === 'string' ? new Date(dateOfBirth) : null;
+          const userIsMinor = isDate(date) ? isMinor(date) : false;
           return ctx.json({ userExists: false, isMinor: userIsMinor });
         }
       }
@@ -598,6 +602,8 @@ export const unifiedOtp = ({
               banReason: '',
               banExpires: null,
               dateOfBirth: dateOfBirth || null,
+              termsAccepted: true,
+              privacyAccepted: true,
             },
           });
         }

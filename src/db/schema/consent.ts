@@ -1,6 +1,15 @@
-import { pgTable, text, boolean, timestamp, uuid } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  text,
+  boolean,
+  timestamp,
+  uuid,
+  pgEnum,
+} from 'drizzle-orm/pg-core';
 import { user } from './auth';
 import { jobPosting } from './job';
+
+const ConsentType = pgEnum('consent_type', ['profile', 'account', 'other']);
 
 export const guardianConsent = pgTable('guardian_consent', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -25,7 +34,8 @@ export const userConsent = pgTable('user_consent', {
   userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
-
+  entityId: uuid('entity_id'),
+  consentType: ConsentType('consent_type').default('other'),
   termsAccepted: boolean('terms_accepted').default(false),
   privacyAccepted: boolean('privacy_accepted').default(false),
   createdAt: timestamp('created_at').defaultNow().notNull(),
