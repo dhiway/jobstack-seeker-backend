@@ -8,6 +8,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { user } from './auth';
 import { jobPosting } from './job';
+import { profile } from './commons';
 
 const ConsentType = pgEnum('consent_type', ['profile', 'account', 'other']);
 
@@ -28,7 +29,22 @@ export const guardianConsent = pgTable('guardian_consent', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// implement in unified otp
+export const minorJobApplicationConsent = pgTable(
+  'minor_job_application_consent',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }),
+    profileId: uuid('profile_id').references(() => profile.id, {
+      onDelete: 'cascade',
+    }),
+    guardianId: uuid('guardian_id').references(() => guardianConsent.id),
+    termsAccepted: boolean('terms_accepted').default(false),
+    privacyAccepted: boolean('privacy_accepted').default(false),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  }
+);
+
 export const userConsent = pgTable('user_consent', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: text('user_id')
@@ -57,22 +73,3 @@ export const applicationConsent = pgTable('application_consent', {
   seekerConsentGiven: boolean('seeker_consent_given'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
-
-/* export const providerDataExportConsent = pgTable(
-  'provider_data_export_consent',
-  {
-    id: uuid('id').primaryKey(),
-    providerId: text('provider_id')
-      .notNull()
-      .references(() => organization.id, { onDelete: 'cascade' }),
-    jobPostId: uuid('job_post_id')
-      .references(() => jobPosting.id, { onDelete: 'cascade' })
-      .notNull(),
-
-    consentGiven: boolean('consent_given').default(false),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-
-    termsAccepted: boolean('terms_accepted').default(false),
-    privacyAccepted: boolean('privacy_accepted').default(false),
-  }
-); */

@@ -4,6 +4,8 @@ import { createGuardianRecord } from './createGuardianRecord';
 import { verifyGuardianRecord } from './verifyGuardianConsent';
 import { fetchGuardianRecord } from './fetchGuardianDetails';
 import { createUserConsentRecord } from './createUserConsentRecord';
+import { createMinorApplicationConsent } from './createMinorApplicationConsent';
+import { verifyMinorApplicationConsent } from './verifyMinorApplicationConsent';
 
 const consentRoutesProvider: FastifyPluginAsyncZod = async function (fastify) {
   //guardian
@@ -22,6 +24,18 @@ const consentRoutesProvider: FastifyPluginAsyncZod = async function (fastify) {
     method: 'GET',
     preHandler: authMiddleware,
     handler: fetchGuardianRecord,
+  });
+  fastify.route({
+    url: '/minor/job-application',
+    method: 'POST',
+    preHandler: authMiddleware,
+    handler: createMinorApplicationConsent,
+  });
+  fastify.route({
+    url: '/minor/job-application',
+    method: 'PUT',
+    preHandler: authMiddleware,
+    handler: verifyMinorApplicationConsent,
   });
   //user
   fastify.route({
