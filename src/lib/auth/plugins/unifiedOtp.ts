@@ -49,7 +49,7 @@ const VerifyOtpInput = z.object({
   otp: z.string('Enter a valid 6 digit otp').length(6).meta({
     description: 'Six digit otp. Ex: "777666"',
   }),
-  dateOfBirth: z.date().optional().nullable().default(null),
+  dateOfBirth: z.date().or(z.string()).optional().nullable().default(null),
   rememberMe: z
     .boolean('If session should be remembered')
     .default(true)
@@ -588,6 +588,9 @@ export const unifiedOtp = ({
             }
           }
 
+          const dob: Date | null =
+            typeof dateOfBirth === 'string' ? new Date(dateOfBirth) : null;
+
           user = await ctx.context.adapter.create({
             model: 'user',
             data: {
@@ -601,7 +604,7 @@ export const unifiedOtp = ({
               banned: false,
               banReason: '',
               banExpires: null,
-              dateOfBirth: dateOfBirth || null,
+              dateOfBirth: dob,
               termsAccepted: true,
               privacyAccepted: true,
             },
