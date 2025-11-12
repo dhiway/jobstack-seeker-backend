@@ -4,6 +4,7 @@ import { generateOtp } from '@lib/auth/plugins/unifiedOtp';
 import { sendMail } from '@lib/mailer';
 import { sendSmsWithMsg91 } from '@lib/messager';
 import redis from '@lib/redis';
+import { guardianConsentEmailOtpHtmlTemplate } from '@src/templates/guardianConsent';
 import { eq, or } from 'drizzle-orm';
 import { FastifyReply, FastifyRequest } from 'fastify';
 
@@ -66,7 +67,7 @@ export async function createGuardianRecord(
         fromEmail: '',
         to: guardianEmail,
         subject: 'Your One-Time Password (OTP) for Jobstack seeker',
-        html: `<p>otp: ${otp}</p>`,
+        html: guardianConsentEmailOtpHtmlTemplate(otp, consent),
       });
     if (guardianPhone)
       await sendSmsWithMsg91({ phoneNumber: guardianPhone, message: otp });
