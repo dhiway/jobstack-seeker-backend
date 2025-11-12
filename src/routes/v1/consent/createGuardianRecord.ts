@@ -70,7 +70,11 @@ export async function createGuardianRecord(
         html: guardianConsentEmailOtpHtmlTemplate(otp, consent),
       });
     if (guardianPhone)
-      await sendSmsWithMsg91({ phoneNumber: guardianPhone, message: otp });
+      await sendSmsWithMsg91({
+        phoneNumber: guardianPhone,
+        message: otp,
+        template_id: '690df2820b3cb74c0e25fd12',
+      });
 
     return reply.code(201).send({
       success: true,

@@ -1,11 +1,13 @@
 export interface SendSmsOptions {
   phoneNumber: string;
   message: string;
+  template_id?: string;
 }
 
 export async function sendSmsWithMsg91({
   phoneNumber,
   message,
+  template_id,
 }: SendSmsOptions) {
   const phone = phoneNumber.startsWith('+')
     ? phoneNumber.slice(1)
@@ -13,7 +15,10 @@ export async function sendSmsWithMsg91({
   const authKey = process.env.MSG91_AUTH_KEY!;
   const url = `https://control.msg91.com/api/v5/flow`;
   const body = JSON.stringify({
-    template_id: process.env.MSG91_TEMPLATE_ID,
+    template_id:
+      typeof template_id === 'string'
+        ? template_id
+        : process.env.MSG91_TEMPLATE_ID,
     short_url: 0,
     recipients: [
       {

@@ -85,6 +85,7 @@ export async function createMinorApplicationConsent(
     await sendSmsWithMsg91({
       phoneNumber: guardian.guardianPhone,
       message: otp,
+      template_id: '690df2b45118e221ed20a946',
     });
 
   reply.send({
