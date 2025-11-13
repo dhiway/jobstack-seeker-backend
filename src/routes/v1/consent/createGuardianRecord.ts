@@ -44,7 +44,7 @@ export async function createGuardianRecord(
           userEmail,
           userPhone,
           guardianName,
-          guardianEmail,
+          guardianEmail: guardianEmail || '',
           guardianPhone,
         })
         .returning();
@@ -61,17 +61,17 @@ export async function createGuardianRecord(
 
     await redis.setex(`guardian_otp:${consent.id}`, expiresInSec, otp);
 
-    if (guardianEmail)
+    if (consent.guardianEmail)
       await sendMail({
         fromName: 'Jobstack seeker',
         fromEmail: '',
-        to: guardianEmail,
+        to: consent.guardianEmail,
         subject: 'Your One-Time Password (OTP) for Jobstack seeker',
         html: guardianConsentEmailOtpHtmlTemplate(otp, consent),
       });
-    if (guardianPhone)
+    if (consent.guardianPhone)
       await sendSmsWithMsg91({
-        phoneNumber: guardianPhone,
+        phoneNumber: consent.guardianPhone,
         message: otp,
         template_id: '690df2820b3cb74c0e25fd12',
       });
