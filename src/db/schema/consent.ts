@@ -2,7 +2,7 @@ import { pgTable, text, boolean, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { user } from './auth';
 import { jobPosting } from './job';
 import { profile } from './commons';
-import { ConsentType } from '.';
+import { ConsentType } from './enums';
 
 export const guardianConsent = pgTable('guardian_consent', {
   id: uuid('id').primaryKey().defaultRandom(),

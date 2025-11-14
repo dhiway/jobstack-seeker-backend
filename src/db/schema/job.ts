@@ -1,19 +1,6 @@
-import {
-  pgTable,
-  uuid,
-  text,
-  jsonb,
-  timestamp,
-  pgEnum,
-} from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, jsonb, timestamp } from 'drizzle-orm/pg-core';
 import { organization, user } from '@db/schema/auth';
-
-export const jobStatusEnum = pgEnum('job_status', [
-  'draft',
-  'open',
-  'closed',
-  'archived',
-]);
+import { jobStatusEnum } from './enums';
 
 export const jobPosting = pgTable('job_posting', {
   id: uuid('id').primaryKey().defaultRandom(),

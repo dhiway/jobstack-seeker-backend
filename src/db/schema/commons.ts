@@ -1,14 +1,6 @@
-import {
-  text,
-  timestamp,
-  jsonb,
-  pgEnum,
-  pgTable,
-  uuid,
-} from 'drizzle-orm/pg-core';
+import { text, timestamp, jsonb, pgTable, uuid } from 'drizzle-orm/pg-core';
 import { user } from '@db/schema/auth';
-
-export const profileType = pgEnum('profile_type', ['personal', 'client']);
+import { profileType } from './enums';
 
 export const location = pgTable('location', {
   id: uuid('id').primaryKey().defaultRandom(),
