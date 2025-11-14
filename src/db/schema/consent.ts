@@ -1,16 +1,8 @@
-import {
-  pgTable,
-  text,
-  boolean,
-  timestamp,
-  uuid,
-  pgEnum,
-} from 'drizzle-orm/pg-core';
+import { pgTable, text, boolean, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { user } from './auth';
 import { jobPosting } from './job';
 import { profile } from './commons';
-
-const ConsentType = pgEnum('consent_type', ['profile', 'account', 'other']);
+import { ConsentType } from '.';
 
 export const guardianConsent = pgTable('guardian_consent', {
   id: uuid('id').primaryKey().defaultRandom(),
