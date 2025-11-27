@@ -114,6 +114,142 @@
 
 ---
 
+## 🗄️ Sandbox Database Setup
+
+The sandbox database is a sanitized replica of the production database designed for safe integration with MindsDB and other analytics tools. All PII (Personally Identifiable Information) is anonymized using consistent hashing.
+
+### Features
+
+- **Separate Database Instance**: Isolated PostgreSQL database for analytics
+- **PII Anonymization**: All sensitive data is hashed/anonymized consistently
+- **Referential Integrity**: Foreign key relationships are maintained
+- **Location Data Preserved**: Location data (address, pincode, GPS, city, state, country) is kept as-is for visualizations and reports
+- **Scheduled Sync**: Can be automated via cron jobs
+
+### Environment Variables
+
+| Variable                  | Description                                          | Default Value                              |
+| ------------------------- | ---------------------------------------------------- | ------------------------------------------ |
+| `SANDBOX_POSTGRES_USER`   | Username for the sandbox PostgreSQL instance.        | `sandbox_user`                             |
+| `SANDBOX_POSTGRES_PASSWORD` | Password for the sandbox PostgreSQL user.         | `sandbox_password`                          |
+| `SANDBOX_POSTGRES_DB`     | Name of the sandbox database.                        | `jobstack_seeker_sandbox`                   |
+| `SANDBOX_DATABASE_PORT`   | Sandbox PostgreSQL port (default: 5433).           | `5433`                                     |
+| `SANDBOX_DATABASE_URL`    | Connection URL for sandbox database.                 | `postgres://sandbox_user:sandbox_password@localhost:5433/jobstack_seeker_sandbox` |
+| `SANDBOX_SALT`            | Salt for anonymization hashing (change in production). | `your-random-salt-string`                |
+
+**Note:** The sandbox database contains a sanitized replica of production data with all PII anonymized. See [Sandbox Database Setup](#-sandbox-database-setup) section for details.
+
+### Setup Instructions
+
+1. **Start the sandbox database** (included in docker-compose):
+
+   ```bash
+   docker compose up sandbox-db -d
+   ```
+
+2. **Configure environment variables** in your `.env` file:
+
+   ```env
+   SANDBOX_DATABASE_URL=postgres://sandbox_user:sandbox_password@localhost:5433/jobstack_seeker_sandbox
+   SANDBOX_SALT=your-random-salt-string-change-this-in-production
+   ```
+
+   Or use individual components:
+
+   ```env
+   SANDBOX_POSTGRES_USER=sandbox_user
+   SANDBOX_POSTGRES_PASSWORD=sandbox_password
+   SANDBOX_POSTGRES_DB=jobstack_seeker_sandbox
+   SANDBOX_DATABASE_PORT=5433
+   SANDBOX_SALT=your-random-salt-string-change-this-in-production
+   ```
+
+3. **Initialize the sandbox schema**:
+
+   ```bash
+   pnpm sandbox:setup
+   ```
+
+4. **Sync data with anonymization**:
+
+   ```bash
+   pnpm sandbox:sync
+   ```
+
+### What Data is Included/Excluded
+
+**Included Tables** (with sanitization):
+- `user` - anonymized email, phone_number, name, user_id
+- `organization` - kept as-is (non-PII)
+- `job_posting` - kept as-is (non-PII)
+- `job_application` - anonymized user_name, user_id, sanitized contact JSONB, **location JSONB kept as-is**
+- `location` - anonymized user_id only, **all location data kept as-is** (address, pincode, GPS, city, state, country)
+- `contact` - anonymized email, phone_number array, user_id
+- `profile` - anonymized user_id, sanitized metadata JSONB (removes user PII, **keeps location data**)
+- `profile_location`, `profile_contact` - kept as-is (junction tables)
+- `member`, `team`, `team_member` - anonymized user_id references
+- `guardian_consent` - anonymized user_email, user_phone, guardian_name, guardian_email, guardian_phone
+- `minor_job_application_consent` - anonymized user_id, profile_id, guardian_id
+- `user_consent` - anonymized user_id
+- `application_consent` - anonymized seeker_id, guardian_consent_id
+
+**Excluded Tables** (sensitive data):
+- `account` - contains tokens/passwords
+- `verification` - contains sensitive verification data
+- `apikey` - contains API keys
+- `invitation` - contains emails
+
+### Anonymization Strategy
+
+- **Emails**: Hashed while preserving format (e.g., `abc123@def456.com`)
+- **Phone Numbers**: Hashed while preserving format (e.g., `+12-3456-7890`)
+- **Names**: Replaced with `User_[hash]`
+- **User IDs**: Hashed consistently to maintain referential integrity
+- **Location Data**: **Kept as-is** (address, pincode, GPS coordinates, city, state, country) - needed for visualizations and reports
+- **JSONB Fields**: Recursively sanitized for nested PII, but location-related data is preserved
+
+### Automated Sync (Cron Job)
+
+To set up automated daily sync, add to your crontab:
+
+```bash
+# Sync sandbox database daily at 2 AM
+0 2 * * * cd /path/to/jobstack-seeker-backend && pnpm sandbox:sync >> /var/log/sandbox-sync.log 2>&1
+```
+
+Or use a cron container in docker-compose (optional).
+
+### Drizzle Studio for Sandbox
+
+To inspect the sandbox database using Drizzle Studio:
+
+```bash
+pnpm db:studio:sandbox
+```
+
+This will open Drizzle Studio on port 4984, connected to the sandbox database.
+
+### Troubleshooting
+
+**Connection Issues**:
+- Verify sandbox-db container is running: `docker ps | grep sandbox-db`
+- Check connection string format in `SANDBOX_DATABASE_URL`
+- Ensure port 5433 is accessible (or configured port)
+
+**Sync Errors**:
+- Verify `DATABASE_URL` points to source database
+- Check `SANDBOX_SALT` is set
+- Ensure source database is accessible
+- Run `pnpm sandbox:sync` to refresh data
+- Check if tables exist: `docker exec -it jobstack-seeker-sandbox-db psql -U sandbox_user -d jobstack_seeker_sandbox -c "\dt"`
+
+**Data Issues**:
+- Verify anonymization is working: Check user table for hashed emails/phones
+- Check referential integrity: User IDs should be consistently hashed across tables
+- Verify location data is preserved: Check location table for original addresses/pincodes
+
+---
+
 ## ⚡ Drizzle Commands
 
 | Command                | When to Use                                                                 | What It Does                                                                                           |
