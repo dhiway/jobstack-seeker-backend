@@ -3,3 +3,4 @@ export * from './auth';
 export * from './job';
 export * from './commons';
 export * from './consent';
+export * from './sessionHistory';

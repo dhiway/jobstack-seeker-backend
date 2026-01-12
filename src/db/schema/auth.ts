@@ -6,6 +6,19 @@ import {
   integer,
 } from 'drizzle-orm/pg-core';
 
+export const session = pgTable('session', {
+  id: text('id').primaryKey(),
+  expiresAt: timestamp('expires_at').notNull(),
+  token: text('token').notNull().unique(),
+  createdAt: timestamp('created_at').notNull(),
+  updatedAt: timestamp('updated_at').notNull(),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+});
+
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
@@ -29,6 +42,9 @@ export const user = pgTable('user', {
   dateOfBirth: timestamp('date_of_birth'),
   termsAccepted: boolean('terms_accepted').default(false),
   privacyAccepted: boolean('privacy_accepted').default(false),
+  lastLoginAt: timestamp('last_login_at'),
+  lastLogoutAt: timestamp('last_logout_at'),
+  lastActivityAt: timestamp('last_activity_at'),
 });
 
 export const account = pgTable('account', {
