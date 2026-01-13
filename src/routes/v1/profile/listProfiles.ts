@@ -1,4 +1,4 @@
-import { and, asc, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import z from 'zod/v4';
 import { profile } from '@db/schema/commons';
@@ -30,9 +30,70 @@ export async function listProfiles(
     .limit(limit)
     .orderBy(orderBy);
 
+  const [{ count }] = await db
+    .select({
+      count: sql<number>`count(*)`,
+    })
+    .from(profile)
+    .where(and(...where));
+
+  const totalCount = Number(count);
+
   return reply.send({
     statusCode: 200,
     message: 'Profiles fetched successfully',
     data: profiles,
+    pagination: {
+      totalCount,
+      page,
+      limit,
+    },
+  });
+}
+export async function listAllProfiles(
+  request: FastifyRequest<{ Querystring: ListProfileQuery }>,
+  reply: FastifyReply
+) {
+  const { page, limit, type, sortBy, sortOrder } =
+    ProfilePaginationQuerySchema.parse(request.query);
+
+  const sortColumn =
+    sortBy === 'updatedAt' ? profile.updatedAt : profile.createdAt;
+  const orderBy = sortOrder === 'asc' ? asc(sortColumn) : desc(sortColumn);
+
+  const whereConditions = [];
+  if (type) {
+    whereConditions.push(eq(profile.type, type));
+  }
+
+  const whereClause =
+    whereConditions.length > 0 ? and(...whereConditions) : undefined;
+
+  const profiles = await db
+    .select()
+    .from(profile)
+    .where(whereClause)
+    .orderBy(orderBy)
+    .offset((page - 1) * limit)
+    .limit(limit);
+
+  const [{ count }] = await db
+    .select({
+      count: sql<number>`count(*)`,
+    })
+    .from(profile)
+    .where(whereClause);
+
+  const totalCount = Number(count);
+
+  return reply.send({
+    statusCode: 200,
+    message: 'All profiles fetched successfully',
+    data: profiles,
+    pagination: {
+      totalCount,
+      page,
+      limit,
+    },
   });
 }
