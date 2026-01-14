@@ -4,6 +4,7 @@ import {
   SuccessResponseSchema,
 } from '@validation/schema/response';
 import { authMiddleware } from '@middleware/validateSession';
+import { validateAPIKey } from '@middleware/validateAPIKey';
 import { createUserProfile } from './createProfile';
 import {
   CreateUserProfileResponseSchema,
@@ -14,7 +15,7 @@ import {
 } from '@validation/common';
 import { updateProfile } from './updateProfile';
 import { deleteProfile } from './deleteProfile';
-import { listProfiles } from './listProfiles';
+import { listProfiles, listAllProfiles } from './listProfiles';
 
 const userProfile: FastifyPluginAsyncZod = async function (fastify) {
   fastify.route({
@@ -77,6 +78,24 @@ const userProfile: FastifyPluginAsyncZod = async function (fastify) {
     preHandler: authMiddleware,
     handler: deleteProfile,
   });
+  fastify.route({
+    url: '/all',
+    method: 'GET',
+    schema: {
+      querystring: ProfilePaginationQuerySchema,
+      tags: ['Profile'],
+      response: {
+        200: FetchUserProfilesResponseSchema,
+        400: ErrorResponseSchema,
+        401: ErrorResponseSchema,
+      },
+    },
+    preHandler: async (request, reply) => {
+      validateAPIKey(request, reply);
+    },
+    handler: listAllProfiles,
+  });
+
 };
 
 export default userProfile;

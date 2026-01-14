@@ -134,6 +134,7 @@ export const FetchUserProfilesResponseSchema = z.object({
   statusCode: z.number().default(200),
   message: z.string(),
   data: profileSchema.array(),
+  pagination: PaginationSchema,
 });
 
 export const CreateUserProfileResponseSchema = z.object({
