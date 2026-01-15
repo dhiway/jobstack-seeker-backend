@@ -70,6 +70,8 @@ services:
     image: redis:7.2-alpine
     container_name: jobstack-seeker-redis
     restart: always
+    ports:
+      - '6379:6379'
     command:
       - sh
       - -c
