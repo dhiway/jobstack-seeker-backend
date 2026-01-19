@@ -4,6 +4,7 @@ import {
   admin,
   apiKey,
   bearer,
+  genericOAuth,
   openAPI,
   organization,
 } from 'better-auth/plugins';
@@ -172,6 +173,19 @@ export const auth = betterAuth({
     admin({
       defaultRole: 'user',
       adminRoles: ['admin'],
+    }),
+    genericOAuth({
+      config: [
+        {
+          providerId: 'pmis',
+          clientId: process.env.PMIS_CLIENT_ID!,
+          clientSecret: process.env.PMIS_CLIENT_SECRET!,
+          authorizationUrl: process.env.PMIS_AUTHORIZATION_URL!,
+          tokenUrl: process.env.PMIS_TOKEN_URL!,
+          userInfoUrl: process.env.PMIS_USER_INFO_URL!,
+          scopes: ['read'],
+        },
+      ],
     }),
     unifiedOtp({
       sendPhoneOtp: async ({ phoneNumber, otp }) => {
