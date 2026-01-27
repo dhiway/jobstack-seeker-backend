@@ -47,6 +47,8 @@ export const auth = betterAuth({
     database: {
       generateId: () => crypto.randomUUID(),
     },
+    disableCSRFCheck: process.env.NODE_ENV !== 'production',
+    disableOriginCheck: process.env.NODE_ENV != 'production',
     useSecureCookies: process.env.NODE_ENV === 'production',
     crossSubDomainCookies: {
       enabled: process.env.NODE_ENV === 'production',
