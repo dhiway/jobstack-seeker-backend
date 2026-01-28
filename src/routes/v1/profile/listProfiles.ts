@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import z from 'zod/v4';
-import { profile } from '@db/schema/commons';
+import { profile, location, profileLocation } from '@db/schema/commons';
 import { db } from '@db/setup';
 import { ProfilePaginationQuerySchema } from '@validation/common';
 
@@ -70,12 +70,35 @@ export async function listAllProfiles(
     whereConditions.length > 0 ? and(...whereConditions) : undefined;
 
   const profiles = await db
-    .select()
+    .select({
+      profile: {
+        id: profile.id,
+        userId: profile.userId,
+        type: profile.type,
+        metadata: profile.metadata,
+        createdAt: profile.createdAt,
+        updatedAt: profile.updatedAt,
+      },
+      location: {
+        id: location.id,
+        tag: location.tag,
+        address: location.address,
+        city: location.city,
+        state: location.state,
+        country: location.country,
+        pincode: location.pincode,
+        gps: location.gps,
+      },
+    })
     .from(profile)
+    .leftJoin(profileLocation, eq(profileLocation.profileId, profile.id))
+    .leftJoin(location, eq(location.id, profileLocation.locationId))
     .where(whereClause)
     .orderBy(orderBy)
     .offset((page - 1) * limit)
     .limit(limit);
+
+
 
   const [{ count }] = await db
     .select({
@@ -89,11 +112,18 @@ export async function listAllProfiles(
   return reply.send({
     statusCode: 200,
     message: 'All profiles fetched successfully',
-    data: profiles,
+    data: profiles.map(row => ({
+      ...row.profile,
+      metadata: {
+        ...(row.profile.metadata ?? {}),
+        location: row.location ?? null,
+      },
+    })),
     pagination: {
       totalCount,
       page,
       limit,
     },
   });
+
 }
