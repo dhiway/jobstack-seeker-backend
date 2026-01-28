@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import {
+  createJsonSchemaTransform,
   /* createJsonSchemaTransform, */
   serializerCompiler,
   validatorCompiler,
@@ -15,6 +16,7 @@ import 'dotenv';
 import AuthRoutes from '@routes/auth';
 import fastifyRateLimit from '@fastify/rate-limit';
 import redis from '@lib/redis';
+import fastifySwagger from '@fastify/swagger';
 /* import HomepageRoute from '@routes/home'; */
 
 declare module 'fastify' {
@@ -24,6 +26,8 @@ declare module 'fastify' {
 }
 
 async function main() {
+  const env_port = parseInt(process.env.BACKEND_PORT || '');
+  const port = isNaN(env_port) || !env_port ? 3002 : env_port;
   const app = Fastify({ logger: true, trustProxy: true });
 
   // Zod Validation Compiler Setup
@@ -50,36 +54,36 @@ async function main() {
   });
 
   // Swagger + Scalar Setup
-  /* await app.register(fastifySwagger, { */
-  /*   openapi: { */
-  /*     info: { */
-  /*       title: 'Jobstack seeker API', */
-  /*       description: 'Jobstack seeker API Service', */
-  /*       version: '1.0.0', */
-  /*     }, */
-  /*     servers: [ */
-  /*       { */
-  /*         url: 'http://localhost:3001', */
-  /*         description: 'Local development server', */
-  /*       }, */
-  /*       { */
-  /*         url: '', */
-  /*         description: 'Staging server for testing updates', */
-  /*       }, */
-  /*       { */
-  /*         url: '', */
-  /*         description: 'Live production server', */
-  /*       }, */
-  /*     ], */
-  /*   }, */
-  /*   transform: createJsonSchemaTransform({ */
-  /*     skipList: ['/api/v1/auth/{*}/*', '/api/v1/auth/{*}', '/api/v1/auth/*'], */
-  /*   }), */
-  /* }); */
-  /**/
-  /* await app.register(import('@scalar/fastify-api-reference'), { */
-  /*   routePrefix: '/api/v1/reference', */
-  /* }); */
+  await app.register(fastifySwagger, {
+    openapi: {
+      info: {
+        title: 'Jobstack seeker API',
+        description: 'Jobstack seeker API Service',
+        version: '1.0.0',
+      },
+      servers: [
+        {
+          url: `http://localhost:${port}`,
+          description: 'Local development server',
+        },
+        {
+          url: '',
+          description: 'Staging server for testing updates',
+        },
+        {
+          url: '',
+          description: 'Live production server',
+        },
+      ],
+    },
+    transform: createJsonSchemaTransform({
+      skipList: ['/api/v1/auth/{*}/*', '/api/v1/auth/{*}', '/api/v1/auth/*'],
+    }),
+  });
+
+  await app.register(import('@scalar/fastify-api-reference'), {
+    routePrefix: '/api/v1/reference',
+  });
 
   // formDataPlugin
   await app.register(formDataPlugin);
@@ -98,9 +102,6 @@ async function main() {
   /* await app.register(HomepageRoute); */
   await app.register(v1Routes, { prefix: '/api/v1' });
   await app.register(AuthRoutes);
-
-  const env_port = parseInt(process.env.BACKEND_PORT || '');
-  const port = isNaN(env_port) || !env_port ? 3002 : env_port;
 
   // Loggers
   app.addHook('onResponse', (request, _, done) => {

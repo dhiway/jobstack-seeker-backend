@@ -735,7 +735,6 @@ export const unifiedOtp = ({
         try {
           const session = await ctx.context.internalAdapter.createSession(
             user.id,
-            ctx,
             rememberMe === false
           );
 

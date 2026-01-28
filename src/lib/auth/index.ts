@@ -24,6 +24,7 @@ import {
 import { sendSmsWithMsg91 } from '@lib/messager';
 import { emailOtpHtmlTemplate } from '@src/templates/unifiedOtp';
 import { updateUserGuardianConsent } from '@lib/consent/updateConsentUserId';
+import { notificationClient } from '@lib/notification/notification_client';
 
 const senderName = process.env.APP_NAME;
 
@@ -192,6 +193,38 @@ export const auth = betterAuth({
         });
       },
       afterUserCreate: async (payload) => {
+        if (payload.user.email)
+          notificationClient.notify({
+            channel: 'email',
+            template_id: 'basic_email',
+            to: payload.user.email,
+            priority: 'realtime',
+            variables: {
+              fromName: 'Welcome to onest jobs',
+              fromEmail: 'support@onest.network',
+              replyTo: 'support@onest.network',
+              subject: 'Welcome!',
+              html: `<div>
+            <p>Congratulations! You just went live with an account on the ONEST Job App. You can now easily explore
+            and apply to jobs near you.</p>
+            <h2>Complete Profile<h2>
+            <a href='https://getjob.onest.network'>https://getjob.onest.network</a>
+            </div>`,
+            },
+          });
+        if (payload.user.phoneNumber)
+          notificationClient.notify({
+            channel: 'whatsapp',
+            template_id: 'other',
+            to: payload.user.phoneNumber,
+            priority: 'realtime',
+            variables: {
+              contentSid: 'HX3f2a5d7e4a18e5664124592a12a154eb',
+              contentVariables: {
+                '1': payload.user.name,
+              },
+            },
+          });
         const reply = await updateUserGuardianConsent(payload.user);
         return { status: reply.updated, consentId: reply.consentId };
       },
