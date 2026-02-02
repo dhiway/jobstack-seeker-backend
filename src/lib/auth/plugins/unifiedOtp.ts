@@ -557,6 +557,7 @@ export const unifiedOtp = ({
         await redis?.delete(otpKey);
 
         let user: UserWithPhoneNumber | null = null;
+        let isNewUser = false;
 
         if (phoneNumber) {
           user = await ctx.context.adapter.findOne<UserWithPhoneNumber>({
@@ -609,6 +610,7 @@ export const unifiedOtp = ({
               privacyAccepted: true,
             },
           });
+          isNewUser = true;
         }
 
         if (!user)
@@ -730,7 +732,11 @@ export const unifiedOtp = ({
           ? isMinor(user.dateOfBirth)
           : false;
 
-        const afterUser = await afterUserCreate({ user });
+        // Only trigger afterUserCreate for new user signups, not for existing user logins
+        let afterUser: Record<string, any> | undefined;
+        if (isNewUser) {
+          afterUser = await afterUserCreate({ user: updatedUser });
+        }
 
         try {
           const session = await ctx.context.internalAdapter.createSession(
@@ -751,7 +757,7 @@ export const unifiedOtp = ({
             redirect: false,
             token: session.token,
             user: { ...updatedUser, isMinor: userIsMinor },
-            afterUserCreate: afterUser,
+            ...(afterUser && { afterUserCreate: afterUser }),
           };
         } catch (error: any) {
           throw new APIError('SERVICE_UNAVAILABLE', error.message);
