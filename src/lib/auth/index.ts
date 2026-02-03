@@ -25,6 +25,7 @@ import { sendSmsWithMsg91 } from '@lib/messager';
 import { emailOtpHtmlTemplate } from '@src/templates/unifiedOtp';
 import { updateUserGuardianConsent } from '@lib/consent/updateConsentUserId';
 import { notificationClient } from '@lib/notification/notification_client';
+import { pmisPlugin } from './plugins/pmis';
 
 const senderName = process.env.APP_NAME;
 
@@ -175,6 +176,14 @@ export const auth = betterAuth({
     admin({
       defaultRole: 'user',
       adminRoles: ['admin'],
+    }),
+    pmisPlugin({
+      clientId: '',
+      clientSecret: '',
+      authorizationUrl: '',
+      tokenUrl: '',
+      userInfoUrl: '',
+      successRedirect: '/dashboard',
     }),
     unifiedOtp({
       sendPhoneOtp: async ({ phoneNumber, otp }) => {
