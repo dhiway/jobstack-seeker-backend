@@ -4,8 +4,9 @@ import { PMISClient } from './pmis-client';
 import { mapPMISToUser } from './user-mapping';
 import { setSessionCookie } from '../utils';
 import { PMISPluginOptions } from './types';
+import { UserWithPhoneNumber } from 'better-auth/plugins';
 
-const CALLBACK_PATH = '/api/v1/auth/oauth2/callback/pmis';
+const CALLBACK_PATH = '/oauth2/callback/pmis';
 const STATE_COOKIE = 'pmis_oauth_state';
 
 export const pmisPlugin = (options: PMISPluginOptions): BetterAuthPlugin => {
@@ -17,7 +18,7 @@ export const pmisPlugin = (options: PMISPluginOptions): BetterAuthPlugin => {
     endpoints: {
       /* Generate authorization URL */
       authorization: createAuthEndpoint(
-        '/sign-in/oauth2/pmis',
+        '/sign-in/oauth2',
         { method: 'POST' },
         async (ctx) => {
           const state = crypto.randomUUID();
@@ -78,19 +79,29 @@ export const pmisPlugin = (options: PMISPluginOptions): BetterAuthPlugin => {
           const pmisUser = await client.getUser(token.access_token);
 
           // Provider linking
-
           const providerId = String(pmisUser.candidate_id);
 
           let account =
             await ctx.context.internalAdapter.findAccount(providerId);
 
-          let user;
+          let user: UserWithPhoneNumber | null =
+            await ctx.context.adapter.findOne({
+              model: 'user',
+              where: [{ field: 'phoneNumber', value: pmisUser.mobile }],
+            });
 
           if (!account) {
-            // create user
-            user = await ctx.context.internalAdapter.createUser(
-              mapPMISToUser(pmisUser)
-            );
+            if (!user) {
+              // create user
+              user = await ctx.context.adapter.create({
+                model: 'user',
+                data: mapPMISToUser(pmisUser),
+              });
+            }
+            if (!user)
+              throw new APIError('INTERNAL_SERVER_ERROR', {
+                message: 'User not created',
+              });
 
             // link provider
             await ctx.context.internalAdapter.linkAccount({
@@ -98,10 +109,6 @@ export const pmisPlugin = (options: PMISPluginOptions): BetterAuthPlugin => {
               providerId: 'pmis',
               accountId: providerId,
             });
-          } else {
-            user = await ctx.context.internalAdapter.findUserById(
-              account.userId
-            );
           }
 
           //-----------------------------------
