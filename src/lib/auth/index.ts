@@ -185,7 +185,7 @@ export const auth = betterAuth({
       authorizationUrl: process.env.PMIS_AUTHORIZATION_URL || '',
       tokenUrl: process.env.PMIS_TOKEN_URL || '',
       userInfoUrl: process.env.PMIS_USER_INFO_URL || '',
-      successRedirect: '/dashboard',
+      successRedirect: process.env.PMIS_SUCCESS_REDIRECT || '',
     }),
     unifiedOtp({
       sendPhoneOtp: async ({ phoneNumber, otp }) => {

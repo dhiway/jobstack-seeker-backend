@@ -46,6 +46,7 @@ services:
       PMIS_AUTHORIZATION_URL: ${PMIS_AUTHORIZATION_URL}
       PMIS_TOKEN_URL: ${PMIS_TOKEN_URL}
       PMIS_USER_INFO_URL: ${PMIS_USER_INFO_URL}
+      PMIS_SUCCESS_REDIRECT: ${PMIS_SUCCESS_REDIRECT}
       BAP_ONEST_LITE_BASE_URL: ${BAP_ONEST_LITE_BASE_URL}
       BAP_X_API_KEY: ${BAP_X_API_KEY}
     volumes:
@@ -72,11 +73,7 @@ services:
     volumes:
       - jobstack-seeker-db:/var/lib/postgresql/data
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -p 5432',
-        ]
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -p 5432']
       interval: 5s
       timeout: 3s
       retries: 20
@@ -92,19 +89,12 @@ services:
       - sh
       - -c
       - >
-        exec redis-server --appendonly yes --appendfsync everysec --save ""
-        --maxmemory ${REDIS_MAXMEMORY:-256mb} --maxmemory-policy
-        ${REDIS_MAXMEMORY_POLICY:-allkeys-lru} ${REDIS_PASSWORD:+--requirepass
-        ${REDIS_PASSWORD}}
+        exec redis-server --appendonly yes --appendfsync everysec --save "" --maxmemory ${REDIS_MAXMEMORY:-256mb} --maxmemory-policy ${REDIS_MAXMEMORY_POLICY:-allkeys-lru} ${REDIS_PASSWORD:+--requirepass ${REDIS_PASSWORD}}
 
     volumes:
       - jobstack-seeker-redis:/data
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'redis-cli ${REDIS_PASSWORD:+-a ${REDIS_PASSWORD}} ping | grep PONG',
-        ]
+      test: ['CMD-SHELL', 'redis-cli ${REDIS_PASSWORD:+-a ${REDIS_PASSWORD}} ping | grep PONG']
       interval: 5s
       timeout: 3s
       retries: 20
