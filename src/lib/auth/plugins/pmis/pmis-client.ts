@@ -31,11 +31,13 @@ export class PMISClient {
     const res = await fetch(this.options.userInfoUrl, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        Accept: 'application/json',
       },
     });
 
     if (!res.ok) {
-      throw new Error(`Failed to fetch PMIS user: ${res.text()}`);
+      const text = await res.text();
+      throw new Error(`Failed to fetch PMIS user: ${text}`);
     }
 
     return res.json() as Promise<PMISUser>;
