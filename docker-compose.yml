@@ -40,6 +40,8 @@ services:
       MAIL_LOG: ${MAIL_LOG}
       LOG_ACTIVITY: ${LOG_ACTIVITY}
       SEND_WHATSAPP_NOTIFICATION: ${SEND_WHATSAPP_NOTIFICATION}
+      BAP_ONEST_LITE_BASE_URL: ${BAP_ONEST_LITE_BASE_URL}
+      BAP_X_API_KEY: ${BAP_X_API_KEY}
     volumes:
       - ./credentials/gcp:/app/credentials/gcp:ro
       - ./logs:/home/logs

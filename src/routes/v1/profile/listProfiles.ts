@@ -4,7 +4,6 @@ import z from 'zod/v4';
 import { profile, location, profileLocation } from '@db/schema/commons';
 import { db } from '@db/setup';
 import { ProfilePaginationQuerySchema } from '@validation/common';
-
 type ListProfileQuery = z.infer<typeof ProfilePaginationQuerySchema>;
 
 export async function listProfiles(
@@ -54,7 +53,7 @@ export async function listAllProfiles(
   request: FastifyRequest<{ Querystring: ListProfileQuery }>,
   reply: FastifyReply
 ) {
-  const { page, limit, type, sortBy, sortOrder } =
+  const { page, limit, type, sortBy, sortOrder, profileId } =
     ProfilePaginationQuerySchema.parse(request.query);
 
   const sortColumn =
@@ -62,6 +61,9 @@ export async function listAllProfiles(
   const orderBy = sortOrder === 'asc' ? asc(sortColumn) : desc(sortColumn);
 
   const whereConditions = [];
+  if (profileId) {
+    whereConditions.push(eq(profile.id, profileId));
+  }
   if (type) {
     whereConditions.push(eq(profile.type, type));
   }
