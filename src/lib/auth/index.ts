@@ -178,11 +178,11 @@ export const auth = betterAuth({
       adminRoles: ['admin'],
     }),
     pmisPlugin({
-      clientId: '',
-      clientSecret: '',
-      authorizationUrl: '',
-      tokenUrl: '',
-      userInfoUrl: '',
+      clientId: process.env.PMIS_CLIENT_ID || '',
+      clientSecret: process.env.PMIS_CLIENT_SECRET || '',
+      authorizationUrl: process.env.PMIS_AUTHORIZATION_URL || '',
+      tokenUrl: process.env.PMIS_TOKEN_URL || '',
+      userInfoUrl: process.env.PMIS_USER_INFO_URL || '',
       successRedirect: '/dashboard',
     }),
     unifiedOtp({
