@@ -10,6 +10,8 @@ import {
 } from '@db/schema/commons';
 import { db } from '@db/setup';
 import { CreateUserProfileSchema } from '@validation/common';
+import { sendBapEvent } from '@lib/bap-event';
+
 
 type CreateUserProfileInput = z.infer<typeof CreateUserProfileSchema>;
 
@@ -182,6 +184,14 @@ export async function createUserProfile(
       contactId,
     });
   }
+
+
+  sendBapEvent('profile.created', {
+    userId,
+    profileId: newProfile.id,
+  }).catch((err) => {
+    request.log.error({ err }, 'BAP event failed');
+  });
 
   // Done!
   return reply.status(201).send({
