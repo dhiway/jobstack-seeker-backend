@@ -35,7 +35,7 @@ export class PMISClient {
     });
 
     if (!res.ok) {
-      throw new Error('Failed to fetch PMIS user');
+      throw new Error(`Failed to fetch PMIS user: ${res.text()}`);
     }
 
     return res.json() as Promise<PMISUser>;
