@@ -46,6 +46,8 @@ services:
       PMIS_AUTHORIZATION_URL: ${PMIS_AUTHORIZATION_URL}
       PMIS_TOKEN_URL: ${PMIS_TOKEN_URL}
       PMIS_USER_INFO_URL: ${PMIS_USER_INFO_URL}
+      BAP_ONEST_LITE_BASE_URL: ${BAP_ONEST_LITE_BASE_URL}
+      BAP_X_API_KEY: ${BAP_X_API_KEY}
     volumes:
       - ./credentials/gcp:/app/credentials/gcp:ro
       - ./logs:/home/logs

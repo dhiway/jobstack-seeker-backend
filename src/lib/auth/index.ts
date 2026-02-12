@@ -9,6 +9,8 @@ import {
 } from 'better-auth/plugins';
 import { db } from '@db/setup';
 import * as schema from '@db/schema/auth';
+import { member} from '@db/schema/auth';
+import { eq } from 'drizzle-orm';
 import { sendMail } from '@lib/mailer';
 import redis from '../redis';
 import { unifiedOtp } from './plugins/unifiedOtp';
@@ -202,6 +204,22 @@ export const auth = betterAuth({
         });
       },
       afterUserCreate: async (payload) => {
+        let seekerOrg = '0';
+        const userMember = await db.query.member.findFirst({
+          where: eq(member.userId, payload.user.id),
+        });
+        if (userMember) {
+          const org = await db.query.organization.findFirst({
+            where: eq(schema.organization.id, userMember.organizationId),
+            columns: { slug: true },
+          });
+          if (org?.slug) {
+            seekerOrg = org.slug;
+          }
+        }
+
+        const seekerUrlPath = `${seekerOrg}/seeker`;
+
         if (payload.user.email)
           notificationClient.notify({
             channel: 'email',
@@ -214,10 +232,10 @@ export const auth = betterAuth({
               replyTo: 'support@onest.network',
               subject: 'Welcome!',
               html: `<div>
-            <p>Congratulations! You just went live with an account on the ONEST Job App. You can now easily explore
+            <p>Congratulations ${payload.user.name}! You just went live with an account on the ONEST Job App. You can now easily explore
             and apply to jobs near you.</p>
             <h2>Complete Profile<h2>
-            <a href='https://getjob.onest.network'>https://getjob.onest.network</a>
+            <a href='https://getjob.onest.network/${seekerUrlPath}'>https://getjob.onest.network/${seekerUrlPath}</a>
             </div>`,
             },
           });
@@ -231,6 +249,7 @@ export const auth = betterAuth({
               contentSid: 'HX3f2a5d7e4a18e5664124592a12a154eb',
               contentVariables: {
                 '1': payload.user.name,
+                '2': seekerUrlPath,
               },
             },
           });

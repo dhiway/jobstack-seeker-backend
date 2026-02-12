@@ -3,6 +3,7 @@ import { UpdateProfileSchema } from '@validation/common';
 import { db } from '@db/setup';
 import { profile } from '@db/schema/commons';
 import { and, eq } from 'drizzle-orm';
+import { sendBapEvent } from '@lib/bap-event';
 import z from 'zod/v4';
 
 type UpdateProfileInput = z.infer<typeof UpdateProfileSchema>;
@@ -37,6 +38,14 @@ export async function updateProfile(
       updatedAt: new Date(),
     })
     .where(eq(profile.id, profileId));
+
+
+  sendBapEvent('profile.updated', {
+    userId,
+    profileId
+  }).catch((err) => {
+    request.log.error({ err }, 'BAP event failed');
+  });
 
   return reply.send({
     statusCode: 200,
