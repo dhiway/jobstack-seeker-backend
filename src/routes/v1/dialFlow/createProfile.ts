@@ -3,6 +3,7 @@ import { db } from '@db/setup';
 import { eq } from 'drizzle-orm';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod/v4';
+import { sendBapEvent } from '@lib/bap-event';
 
 const CreateProfileForDialFlowRequestSchema = z.object({
   userId: z.string(),
@@ -38,6 +39,13 @@ const createProfile = async (
       metadata,
     })
     .returning();
+
+  sendBapEvent('profile.created', {
+    userId: userDetails.id,
+    profileId: newProfile.id,
+  }).catch((err) => {
+    request.log.error({ err }, 'BAP event failed');
+  });
 
   return reply.status(201).send({
     statusCode: 201,
