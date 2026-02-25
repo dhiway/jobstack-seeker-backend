@@ -31,7 +31,7 @@ const createProfile = async (
     });
   }
 
-  const newProfile = await db
+  const [newProfile] = await db
     .insert(profile)
     .values({
       userId: userDetails.id,
