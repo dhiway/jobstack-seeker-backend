@@ -31,7 +31,7 @@ const createProfile = async (
     });
   }
 
-  const [newProfile] = await db
+  const newProfile = await db
     .insert(profile)
     .values({
       userId: userDetails.id,
@@ -42,7 +42,7 @@ const createProfile = async (
 
   sendBapEvent('profile.created', {
     userId: userDetails.id,
-    profileId: newProfile.id,
+    profileId: newProfile[0].id,
   }).catch((err) => {
     request.log.error({ err }, 'BAP event failed');
   });
