@@ -54,8 +54,18 @@ export async function listAllProfiles(
   request: FastifyRequest<{ Querystring: ListProfileQuery }>,
   reply: FastifyReply
 ) {
-  const { page, limit, type, sortBy, sortOrder, profileId, email, phoneNumber } =
+  const { page, limit, type, sortBy, sortOrder, profileId, email } =
     ProfilePaginationQuerySchema.parse(request.query);
+  let { phoneNumber } = ProfilePaginationQuerySchema.parse(request.query);
+
+  if (phoneNumber) {
+    phoneNumber = phoneNumber.trim();
+
+    if (phoneNumber.startsWith('91') && !phoneNumber.startsWith('+')) {
+      phoneNumber = `+${phoneNumber}`;
+    }
+  }
+
 
   const sortColumn =
     sortBy === 'updatedAt' ? profile.updatedAt : profile.createdAt;
