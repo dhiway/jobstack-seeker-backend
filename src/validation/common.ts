@@ -84,7 +84,9 @@ export const ProfilePaginationQuerySchema = z.object({
   type: z.enum(['personal', 'client']).optional(), // only for profiles
   sortBy: z.enum(['createdAt', 'updatedAt']).optional().default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
-  profileId: z.string().optional()
+  profileId: z.string().optional(),
+  email: z.email().optional(),
+  phoneNumber: z.string().optional(),
 });
 
 export const PaginationSchema = z.object({
