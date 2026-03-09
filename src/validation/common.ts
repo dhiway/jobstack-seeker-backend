@@ -85,7 +85,7 @@ export const ProfilePaginationQuerySchema = z.object({
   sortBy: z.enum(['createdAt', 'updatedAt']).optional().default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
   profileId: z.string().optional(),
-  email: z.email().optional(),
+  email: z.string().optional(),
   phoneNumber: z.string().optional(),
 });
 
