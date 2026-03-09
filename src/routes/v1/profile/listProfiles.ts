@@ -2,6 +2,7 @@ import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import z from 'zod/v4';
 import { profile, location, profileLocation } from '@db/schema/commons';
+import { user } from '@db/schema/auth';
 import { db } from '@db/setup';
 import { ProfilePaginationQuerySchema } from '@validation/common';
 type ListProfileQuery = z.infer<typeof ProfilePaginationQuerySchema>;
@@ -53,7 +54,7 @@ export async function listAllProfiles(
   request: FastifyRequest<{ Querystring: ListProfileQuery }>,
   reply: FastifyReply
 ) {
-  const { page, limit, type, sortBy, sortOrder, profileId } =
+  const { page, limit, type, sortBy, sortOrder, profileId, email, phoneNumber } =
     ProfilePaginationQuerySchema.parse(request.query);
 
   const sortColumn =
@@ -66,6 +67,13 @@ export async function listAllProfiles(
   }
   if (type) {
     whereConditions.push(eq(profile.type, type));
+  }
+  if (email) {
+    whereConditions.push(eq(user.email, email));
+  }
+
+  if (phoneNumber) {
+    whereConditions.push(eq(user.phoneNumber, phoneNumber));
   }
 
   const whereClause =
@@ -93,6 +101,7 @@ export async function listAllProfiles(
       },
     })
     .from(profile)
+    .leftJoin(user, eq(profile.userId, user.id))
     .leftJoin(profileLocation, eq(profileLocation.profileId, profile.id))
     .leftJoin(location, eq(location.id, profileLocation.locationId))
     .where(whereClause)
@@ -107,6 +116,7 @@ export async function listAllProfiles(
       count: sql<number>`count(*)`,
     })
     .from(profile)
+    .leftJoin(user, eq(profile.userId, user.id))
     .where(whereClause);
 
   const totalCount = Number(count);
