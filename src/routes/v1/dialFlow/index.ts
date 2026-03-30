@@ -2,6 +2,7 @@ import { validateAPIKey } from '@middleware/validateAPIKey';
 import { FastifyPluginAsync } from 'fastify';
 import verifyUser from './verifyUser';
 import createProfile from './createProfile';
+import updateProfile from './updateProfile';
 import createJobPosting from './createJobPosting';
 import { getOrganizationDetailsByAgentId } from './getOrganizationDetailsByAgentId';
 
@@ -21,6 +22,14 @@ const dialFlowRoutes: FastifyPluginAsync = async (fastify) => {
       validateAPIKey(request, reply);
     },
     handler: createProfile,
+  });
+  fastify.route({
+    url: '/update-profile',
+    method: 'POST',
+    preHandler: async (request, reply) => {
+      validateAPIKey(request, reply);
+    },
+    handler: updateProfile,
   });
   fastify.route({
     url: '/create-job-post',
