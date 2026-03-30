@@ -25,7 +25,7 @@ const dialFlowRoutes: FastifyPluginAsync = async (fastify) => {
   });
   fastify.route({
     url: '/update-profile',
-    method: 'POST',
+    method: 'PUT',
     preHandler: async (request, reply) => {
       validateAPIKey(request, reply);
     },
