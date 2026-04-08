@@ -30,6 +30,8 @@ declare namespace NodeJS {
     SERVER_ENDPOINT: string;
 
     DATABASE_URL: string;
+    EXTERNAL_ORG_CREATE_API_KEY: string;
+    SEEKER_APP_BASE_URL: string;
 
     MAIL_LOG: 'true' | 'false';
 
