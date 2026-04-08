@@ -42,6 +42,8 @@ services:
       SEND_WHATSAPP_NOTIFICATION: ${SEND_WHATSAPP_NOTIFICATION}
       BAP_ONEST_LITE_BASE_URL: ${BAP_ONEST_LITE_BASE_URL}
       BAP_X_API_KEY: ${BAP_X_API_KEY}
+      EXTERNAL_ORG_CREATE_API_KEY: ${EXTERNAL_ORG_CREATE_API_KEY}
+      SEEKER_APP_BASE_URL: ${SEEKER_APP_BASE_URL}
     volumes:
       - ./credentials/gcp:/app/credentials/gcp:ro
       - ./logs:/home/logs
