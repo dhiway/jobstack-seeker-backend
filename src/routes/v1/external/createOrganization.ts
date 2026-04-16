@@ -330,6 +330,8 @@ export async function createOrganizationExternal(
   const appBaseUrl =
     process.env.SEEKER_APP_BASE_URL?.replace(/\/+$/, '') ||
     'https://getjob.onest.network';
+  const seekerUrl = `${appBaseUrl}/${createdOrg.slug}/seeker`;
+  const qrCodeUrl = `https://hashcode.dhiway.net/?text=${encodeURIComponent(seekerUrl)}`;
 
   return reply.status(201).send({
     statusCode: 201,
@@ -348,7 +350,8 @@ export async function createOrganizationExternal(
         role: effectiveRole,
         existingUser: finalIsExistingUser,
       },
-      url: `${appBaseUrl}/${createdOrg.slug}/seeker`,
+      url: seekerUrl,
+      qrCodeUrl,
     },
   });
 }
